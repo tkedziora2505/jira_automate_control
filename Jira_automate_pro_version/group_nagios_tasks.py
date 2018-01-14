@@ -23,11 +23,14 @@ class Group_Nagios_Tasks(object):
         info = BeautifulSoup(file, "html.parser")
         classList = ["serviceCRITICAL", "serviceOK", "serviceWARNING"]
         for row in info.find(class_=classList):
-            self.status = str(row).strip()
+            row_decode = row.encode('utf-8').strip()
+            self.status = str(row_decode).strip()
 
     def check_Ok(self):
+        self.status = str(self.status).strip()
+        # print(len(self.status))
         # print(self.status)
         # print(type(self.status))
-        if self.status == "OK":
+        if self.status.find("OK") != -1 :
             self.check_ok = True
 

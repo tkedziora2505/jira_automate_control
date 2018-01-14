@@ -6,6 +6,8 @@ from io import BytesIO
 from bs4 import BeautifulSoup
 import pycurl
 import mysql.connector
+import datetime
+
 
 from task_abs import Task
 from first_line import First_Line
@@ -77,28 +79,29 @@ if len(NewHlsIdList):
         print("| SYS | Found -> " + str(len(NewHlsIdList)) + " New Task is Jira")
         for taskId in NewHlsIdList:
             newHlTask = New_Helpline(taskId,jira)
-            # newHlTask.display()
+            newHlTask.display()
             newHlTask.set_Crm()
             if newHlTask.crm == 0:
                 print("| ERROR | Not Found CRM")
                 hlObjectFailList.append(newHlTask)
             else:
                 hlObjectToAcceptList.append(newHlTask)
-
+print(str(datetime.datetime.now()))
 print("| OK | New " + str(len(hlObjectToAcceptList)) + " hl to accept object list -> " + str(hlObjectToAcceptList))
-print("| ERROR| New " + str(len(hlObjectFailList)) + " hl with ERROR object list -> " + str(hlObjectFailList))
+if len(hlObjectFailList) > 1:
+    print("| ERROR| New " + str(len(hlObjectFailList)) + " hl with ERROR object list -> " + str(hlObjectFailList))
 print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
 print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
 
 urlPost = 'https://projects.services.avantis.pl/secure/CommentAssignIssue.jspa?atl_token=BJRJ-VNI7-LB9Z-CMCM%7C8bfa8cac52245131ba165a1e35df9b7b07f4ff38%7Clin'
 for hl in hlObjectToAcceptList:
-    text = str("Zaakceptowalem taska: " + str(hl.key) + " - " + str(hl.name))
+    text = str("Zaakceptowalem taska: " + str(hl.key) + " - " + str(hl.name) + " CRM: " + str(hl.crm))
     send_to_slack(text)
     # post = hl.accept_Task(urlPost)
-    my_sql_Database = My_Sql_Database()
-    my_sql_Database.add_Accepted_Task(hl)
-    if my_sql_Database.error() != 0:
-        send_to_slack("Dodalem do bazy")
+    # my_sql_Database = My_Sql_Database()
+    # my_sql_Database.add_Accepted_Task(hl)
+    # if my_sql_Database.error() != 0:
+    #     send_to_slack("Dodalem do bazy")
     # print(post.text)
 
 
@@ -109,7 +112,7 @@ jql_Query_Accepted = 'project=HL and status="ACCEPTED - I LINE"'
 get_Tasks_Ids_From_Jira(FirstLineHlsIdsList,jql_Query_Accepted,jira)
 print("| OK | First line List: " +str(FirstLineHlsIdsList))
 if len(FirstLineHlsIdsList) == 0:
-    print("| SYS | Found -> " + str(len(FirstLineHlsIdsList)) + " Accepted on Jira")
+    print("| SYS | Found -> " + str(len(FirstLineHlsIdsList)) + " Accepted on Jira - > " + str(FirstLineHlsIdsList))
 else:
     print("| SYS | Found -> " + str(len(FirstLineHlsIdsList)) + " Accepted on Jira")
     for taskId in FirstLineHlsIdsList:
@@ -117,6 +120,7 @@ else:
         # firstLineTask.display()
         if firstLineTask.check_Time_To_DD() == False:
             firstLineTask.move_To_Second_Line(jira)
+            send_to_slack("Przenioslem taska " + str(firstLineTask.key) + " " + str(firstLineTask.name) + " na II linie")
         FirstLineHlsObjectList.append(firstLineTask)
     # print(FirstLineHlsObjectList)
 
@@ -137,7 +141,7 @@ else:
         # secondLineTask.display()
         if secondLineTask.check_Time_To_DD() == False:
             # send_to_slack("DD na II bedzie przekroczony = " + str(secondLineTask.key) + "name = "+ str(secondLineTask.name))
-            print("Mam przekroczonego taska na II")
+            print("Mam przekroczonego taska na II -> " + str(secondLineTask.key))
         SecondLineHlsObjectList.append(secondLineTask)
 
 
@@ -153,12 +157,18 @@ for task in allTaskList:
         else:
             groupNagiosTask.get_Url()
             page = get_Page(groupNagiosTask.url)
+            # print(page)
             groupNagiosTask.get_Status(page)
             groupNagiosTask.check_Ok()
-            if groupNagiosTask.check_ok == True:
-                my_sql_Database = My_Sql_Database()
-                print(my_sql_Database.add_Nagios_Tasks(groupNagiosTask))
-                if  my_sql_Database.add_Nagios_Tasks(groupNagiosTask) != 0:
-                    send_to_slack("Task " + str(groupNagiosTask.hl) + " jest w stanie OK")
+            # if groupNagiosTask.check_ok == True:
+                # my_sql_Database = My_Sql_Database()
+                # print(my_sql_Database.add_Nagios_Tasks(groupNagiosTask))
+                # if  my_sql_Database.add_Nagios_Tasks(groupNagiosTask) != 0:
+                # send_to_slack("Task " + str(groupNagiosTask.hl) + " jest w stanie OK")
+            print("Nagios list: ")
             groupNagiosTask.display()
 
+print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||1")
+print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||2")
+print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||3")
+print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||4")

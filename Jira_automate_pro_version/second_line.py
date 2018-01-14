@@ -6,7 +6,7 @@ class Second_Line(Task):
     def __init__(self, id, jira):
         self.id = id
         self.jira = jira
-        super().__init__(self.id, jira)
+        super(Second_Line, self).__init__(self.id, jira)
 
     def check_Time_To_DD(self):
         task = self.jira.issue(self.id)
