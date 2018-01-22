@@ -7,11 +7,11 @@ class Second_Line(Task):
         self.id = id
         self.jira = jira
         super(Second_Line, self).__init__(self.id, jira)
+        # print(self)
 
     def check_Time_To_DD(self):
         task = self.jira.issue(self.id)
-        self.dd = task.fields.customfield_11268
-        check_Time_To_DD = Task.check_Time_To_DD(self)
+        check_Time_To_DD = Task.check_Time_To_DD( self ,self.fulldd)
         return check_Time_To_DD
 
     def display(self):

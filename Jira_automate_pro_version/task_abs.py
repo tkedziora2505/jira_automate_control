@@ -5,15 +5,20 @@ class Task(object):
     def __init__(self, id, jira):
         self.id = id
         task = jira.issue(self.id)
-        self.name =  str(task.fields.customfield_12902)
+        self.name = str(task.fields.customfield_12902).decode("utf-8", "replace")
         if self.name == "None":
-            self.name = task.fields.summary
+            self.name = str(task.fields.summary).decode("utf-8", "replace")
 
         self.dd = task.fields.customfield_11267
         self.key = task.key
         self.email = task.fields.customfield_11208
         self.crm = task.fields.customfield_11256
         self.desc = task.fields.description
+        created_string = str(task.fields.created)
+        created_string_end = created_string.rfind('.')
+        created_string = created_string[: created_string_end]
+        self.create_date = datetime.datetime.strptime(created_string, '%Y-%m-%dT%H:%M:%S')
+        self.fulldd = task.fields.customfield_11268
         if self.email == "arhplus@avantis.pl":
             self.groupId = 1
         elif self.email == "orion@mail.avantis.pl":
@@ -26,13 +31,12 @@ class Task(object):
             self.groupId = 0
         pass
 
-    def check_Time_To_DD(self):
-        task_DD_String = self.dd
+    def check_Time_To_DD(self, dd):
+        task_DD_String = dd
         task_DD_End = task_DD_String.rfind(".")
         task_DD_String = task_DD_String[:task_DD_End]
         # print("dd = " + str(task_DD_String))
         date_Now = str(datetime.datetime.now())
-        # print("NOW = " + str(date_Now))
         date_Now_End = date_Now.rfind(".")
         date_Now = date_Now[: date_Now_End]
         date_Now = str(date_Now).strip().replace(" ", "T")

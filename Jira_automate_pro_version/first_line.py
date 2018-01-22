@@ -8,7 +8,7 @@ class First_Line(Task):
         super(First_Line, self).__init__(self.id, jira)
 
     def check_Time_To_DD(self):
-        check_Time_To_DD = Task.check_Time_To_DD(self)
+        check_Time_To_DD = Task.check_Time_To_DD(self, self.dd)
         # print(check_Time_To_DD)
         return check_Time_To_DD
 

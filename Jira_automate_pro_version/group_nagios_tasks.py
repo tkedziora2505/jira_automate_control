@@ -9,6 +9,7 @@ class Group_Nagios_Tasks(object):
         # print(self.sure)
         self.check_ok = False
         self.sure = int(str(self.nagios_Task.name).find("Nagios"))
+        self.create_date = self.nagios_Task.create_date
 
     def get_Url(self):
         self.url = str(self.nagios_Task.desc)
@@ -33,4 +34,5 @@ class Group_Nagios_Tasks(object):
         # print(type(self.status))
         if self.status.find("OK") != -1 :
             self.check_ok = True
+            return True
 

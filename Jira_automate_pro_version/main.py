@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import json
 from jira import JIRA
 import requests
@@ -18,7 +19,7 @@ from my_sql_database import My_Sql_Database
 
 def login():
     login = 'tkedziora'
-    password = 'Kedziora02!@'
+    password = 'Kedziora03!@'
     auth = (login, password)
     return auth
 
@@ -50,7 +51,7 @@ def get_Page(url):
     buffer = BytesIO()
     c = pycurl.Curl()
     c.setopt(c.URL, url)
-    c.setopt(pycurl.USERPWD, '%s:%s' % ("tkedziora", "Kedziora02!@"))
+    c.setopt(pycurl.USERPWD, '%s:%s' % ("tkedziora", "Kedziora03!@"))
     c.setopt(pycurl.SSL_VERIFYPEER, 0)
     c.setopt(pycurl.SSL_VERIFYHOST, 0)
     c.setopt(c.WRITEDATA, buffer)
@@ -60,10 +61,9 @@ def get_Page(url):
     file = file.decode('utf-8')
     return file
 
-
+print(str(datetime.datetime.now()))
 jiraUrl = {'server': 'https://projects.services.avantis.pl'}
 jira = get_Jira(login(), jiraUrl)
-
 NewHlsIdList = []
 NewHlsObjectList = []
 jql_Query_New_Helpline = 'project=HL and status="New"'
@@ -86,7 +86,7 @@ if len(NewHlsIdList):
                 hlObjectFailList.append(newHlTask)
             else:
                 hlObjectToAcceptList.append(newHlTask)
-print(str(datetime.datetime.now()))
+
 print("| OK | New " + str(len(hlObjectToAcceptList)) + " hl to accept object list -> " + str(hlObjectToAcceptList))
 if len(hlObjectFailList) > 1:
     print("| ERROR| New " + str(len(hlObjectFailList)) + " hl with ERROR object list -> " + str(hlObjectFailList))
@@ -97,13 +97,7 @@ urlPost = 'https://projects.services.avantis.pl/secure/CommentAssignIssue.jspa?a
 for hl in hlObjectToAcceptList:
     text = str("Zaakceptowalem taska: " + str(hl.key) + " - " + str(hl.name) + " CRM: " + str(hl.crm))
     send_to_slack(text)
-    # post = hl.accept_Task(urlPost)
-    # my_sql_Database = My_Sql_Database()
-    # my_sql_Database.add_Accepted_Task(hl)
-    # if my_sql_Database.error() != 0:
-    #     send_to_slack("Dodalem do bazy")
-    # print(post.text)
-
+    post = hl.accept_Task(urlPost)
 
 
 FirstLineHlsIdsList = []
@@ -117,8 +111,12 @@ else:
     print("| SYS | Found -> " + str(len(FirstLineHlsIdsList)) + " Accepted on Jira")
     for taskId in FirstLineHlsIdsList:
         firstLineTask = First_Line(taskId, jira)
+        my_sql_Database = My_Sql_Database()
+        # print(my_sql_Database.check_exist(firstLineTask))
+        if my_sql_Database.check_exist(firstLineTask) == False:
+            my_sql_Database.add_Task(firstLineTask)
         # firstLineTask.display()
-        if firstLineTask.check_Time_To_DD() == False:
+        elif firstLineTask.check_Time_To_DD() == False:
             firstLineTask.move_To_Second_Line(jira)
             send_to_slack("Przenioslem taska " + str(firstLineTask.key) + " " + str(firstLineTask.name) + " na II linie")
         FirstLineHlsObjectList.append(firstLineTask)
@@ -132,15 +130,24 @@ SecondLineHlsObjectList = []
 jql_Query_Second_Line = 'project=HL and status="II LINE"'
 get_Tasks_Ids_From_Jira(SecondLineHlsIdsList, jql_Query_Second_Line, jira)
 print("| OK | Second Line Id List: " +str(SecondLineHlsIdsList))
-if len(FirstLineHlsIdsList) == 0:
-    print("| SYS | Found -> " + str(len(SecondLineHlsIdsList)) + " Second Line on Jira")
+if len(SecondLineHlsIdsList) == 0:
+    print("| SYS | NOT Found -> Second Line on Jira")
 else:
     print("| SYS | Found -> " + str(len(SecondLineHlsIdsList)) + " Second Line on Jira")
     for taskId in SecondLineHlsIdsList:
-        secondLineTask = Second_Line(taskId,jira)
-        # secondLineTask.display()
+        secondLineTask = Second_Line(taskId, jira)
+        secondLineTask.display()
+        # print(secondLineTask)
+        my_sql_Database = My_Sql_Database()
+        # print("Kurwa")
+        # print(my_sql_Database.check_exist(secondLineTask))
+        if my_sql_Database.check_exist(secondLineTask) == False:
+            my_sql_Database.add_Task(secondLineTask)
+        # print("TUTAJ == " + str(secondLineTask.fulldd))
+        else:
+             my_sql_Database.update_dd(secondLineTask)
         if secondLineTask.check_Time_To_DD() == False:
-            # send_to_slack("DD na II bedzie przekroczony = " + str(secondLineTask.key) + "name = "+ str(secondLineTask.name))
+            send_to_slack("DD na II bedzie przekroczony = " + str(secondLineTask.key) + "name = "+ str(secondLineTask.name))
             print("Mam przekroczonego taska na II -> " + str(secondLineTask.key))
         SecondLineHlsObjectList.append(secondLineTask)
 
@@ -159,12 +166,12 @@ for task in allTaskList:
             page = get_Page(groupNagiosTask.url)
             # print(page)
             groupNagiosTask.get_Status(page)
-            groupNagiosTask.check_Ok()
-            # if groupNagiosTask.check_ok == True:
-                # my_sql_Database = My_Sql_Database()
+            if groupNagiosTask.check_Ok() == True:
+                my_sql_Database.update_Check_Ok(groupNagiosTask)
+            if groupNagiosTask.check_ok == True:
+                my_sql_Database = My_Sql_Database()
                 # print(my_sql_Database.add_Nagios_Tasks(groupNagiosTask))
-                # if  my_sql_Database.add_Nagios_Tasks(groupNagiosTask) != 0:
-                # send_to_slack("Task " + str(groupNagiosTask.hl) + " jest w stanie OK")
+                send_to_slack("Task " + str(groupNagiosTask.hl) + " jest w stanie OK")
             print("Nagios list: ")
             groupNagiosTask.display()
 

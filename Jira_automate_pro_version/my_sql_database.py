@@ -3,44 +3,51 @@ import mysql.connector
 class My_Sql_Database(object):
     def __init__(self):
         self.cnx = mysql.connector.connect(user='root', password='kociak2003!@',
-                                           host='127.0.0.1', database='jira_control_automate')
+                                           host='127.0.0.1', database='jira_automate_control')
         self.cursor = self.cnx.cursor()
 
-    def add_Nagios_Tasks(self, nagios_Task):
-        self.nagios_Task = nagios_Task
-        self.query = ("INSERT INTO nagios_tasks(id, hl, check_ok) " 
-                            "VALUES (%s, %s, %s)")
-        self.data = (self.nagios_Task.id, self.nagios_Task.hl, self.nagios_Task.check_ok)
+    def add_Task(self, task):
+        self.task = task
+        self.query = ("INSERT INTO helpline_task(id, create_date, hl_key, hl_name, dead_line, crm_key, check_ok, action)" 
+                            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)")
+        self.data = (self.task.id, self.task.create_date, self.task.key, self.task.name, self.task.dd, self.task.crm, "False", 0)
         try:
             self.cursor.execute(self.query, self.data)
             self.cnx.commit()
-            self.cursor.close()
-            self.cnx.close()
         except mysql.connector.Error as err:
             print("ERROR save in DATABASE" + str(err))
             return 0
 
-    def add_Accepted_Task(self, accepted_task):
-        self.accepted_Task = accepted_task
-        self.query = ("INSERT INTO accepted_tasks(id, hl, name, crm, email, groupId, descri) "
-                            "VALUES (%s, %s, %s, %s, %s, %s, %s)")
-        self.data = (self.accepted_Task.id, self.accepted_Task.key, self.accepted_Task.name, self.accepted_Task.crm, self.accepted_Task.email, self.accepted_Task.groupId, self.accepted_Task.desc)
+    def check_exist(self, task):
+        self.task = task
+        print(self.task.id)
         try:
-            self.cursor.execute(self.query, self.data)
-            self.cnx.commit()
-            self.cursor.close()
-            self.cnx.close()
+            self.cursor.execute("SELECT * FROM helpline_task WHERE id=%s", (self.task.id,))
+            row = self.cursor.fetchone()
+            print("Znalazlem na bazie = " + str(row))
+            if row != None:
+                return True
+            else:
+                return False
         except mysql.connector.Error as err:
-            print("ERROR save in DATABASE" + str(err))
-            return 0
+            print("ERROR save in DATABASE: " + str(err))
+            return False
 
-    def error(self):
+    def update_Check_Ok(self, task):
+        self.task = task
         try:
-            self.cursor.execute(self.query, self.data)
+            self.cursor.execute("UPDATE helpline_task SET check_ok = \"True\" WHERE id=%s", (self.task.id,))
             self.cnx.commit()
-            self.cursor.close()
-            self.cnx.close()
+            print("Update check_ok ")
         except mysql.connector.Error as err:
-            print("ERROR save in DATABASE" + str(err))
-            return 0
+            print("ERROR save in DATABASE: " + str(err))
 
+
+    def update_dd(self, task):
+        self.task = task
+        try:
+            self.cursor.execute("UPDATE helpline_task SET dead_line = %s WHERE id=%s", (self.task.fulldd, self.task.id))
+            self.cnx.commit()
+            print("Update dd")
+        except mysql.connector.Error as err:
+            print("ERROR save in DATABASE: " + str(err))
