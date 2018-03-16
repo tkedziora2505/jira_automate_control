@@ -18,8 +18,8 @@ from group_nagios_tasks import Group_Nagios_Tasks
 from my_sql_database import My_Sql_Database
 
 def login():
-    login = 'tkedziora'
-    password = 'Kedziora03!@'
+    login = 'xxx'
+    password = 'xxxx'
     auth = (login, password)
     return auth
 
@@ -35,7 +35,7 @@ def get_Tasks_Ids_From_Jira(Tasks_Ids_List, jql_Query, jira):
 
 
 def send_to_slack(text):
-    slack_url = "https://hooks.slack.com/services/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"
+    slack_url = "xxxxx"
     payload = {
         'channel': '#nagios_alert_test',
         'username': 'Jira_Control_Info',
@@ -51,7 +51,7 @@ def get_Page(url):
     buffer = BytesIO()
     c = pycurl.Curl()
     c.setopt(c.URL, url)
-    c.setopt(pycurl.USERPWD, '%s:%s' % ("tkedziora", "Kedziora03!@"))
+    c.setopt(pycurl.USERPWD, '%s:%s' % ("xxxx", "xxxxx"))
     c.setopt(pycurl.SSL_VERIFYPEER, 0)
     c.setopt(pycurl.SSL_VERIFYHOST, 0)
     c.setopt(c.WRITEDATA, buffer)
@@ -62,7 +62,7 @@ def get_Page(url):
     return file
 
 print(str(datetime.datetime.now()))
-jiraUrl = {'server': 'https://projects.services.avantis.pl'}
+jiraUrl = {'server': 'xxxxx'}
 jira = get_Jira(login(), jiraUrl)
 NewHlsIdList = []
 NewHlsObjectList = []
@@ -93,7 +93,7 @@ if len(hlObjectFailList) > 1:
 print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
 print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
 
-urlPost = 'https://projects.services.avantis.pl/secure/CommentAssignIssue.jspa?atl_token=BJRJ-VNI7-LB9Z-CMCM%7C8bfa8cac52245131ba165a1e35df9b7b07f4ff38%7Clin'
+urlPost = 'xxx'
 for hl in hlObjectToAcceptList:
     text = str("Zaakceptowalem taska: " + str(hl.key) + " - " + str(hl.name) + " CRM: " + str(hl.crm))
     send_to_slack(text)
