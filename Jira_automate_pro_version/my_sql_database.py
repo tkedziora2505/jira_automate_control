@@ -2,7 +2,7 @@ import mysql.connector
 
 class My_Sql_Database(object):
     def __init__(self):
-        self.cnx = mysql.connector.connect(user='root', password='kociak2003!@',
+        self.cnx = mysql.connector.connect(user='xxx', password='xxxxx!@',
                                            host='127.0.0.1', database='jira_automate_control')
         self.cursor = self.cnx.cursor()
 
