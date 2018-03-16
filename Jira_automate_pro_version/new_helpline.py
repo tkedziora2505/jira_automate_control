@@ -64,7 +64,7 @@ class New_Helpline(Task):
             self.data = {'id': self.id, 'customfield_11256': self.crm, 'customfield_11213': '10916', 'priority': '3',
                          'customfield_10906': '10723', 'action': '11'}
         cookie = {'atlassian.xsrf.token': 'BJRJ-VNI7-LB9Z-CMCM|8bfa8cac52245131ba165a1e35df9b7b07f4ff38|lin'}
-        request = requests.post(self.url, data=self.data, auth=("tkedziora", 'Kedziora03!@'), cookies=cookie)
+        request = requests.post(self.url, data=self.data, auth=("xx", 'xxx!@'), cookies=cookie)
         return request
 
     def display(self):
